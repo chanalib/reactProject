@@ -1,0 +1,20 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image: url('../public/images/g.png');
+  background-size: cover; /* למלא את כל המסך */
+  background-position: center; /* למקם את התמונה במרכז */
+  background-attachment: fixed; /* למנוע תזוזה של התמונה בעת גלילה */
+  height: 100vh; /* לוודא שהתמונה תתפוס את כל הגובה של המסך */
+  margin: 0; /* ביטול רווחים סביב ה-body */
+  overflow: hidden; /* מבטל גלילה נוספת אם יש */
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
