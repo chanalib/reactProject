@@ -29,16 +29,20 @@ const ImageButton = styled(Button)(({ theme }) => ({
         },
     },
 }));
-
 const Header: React.FC<HeaderProps> = ({ onSignupClick }) => {
     const context = useContext(UserContext);
-    const isLogin = !!context?.user;
+    if (!context) {
+        throw new Error("Header must be used within a UserProvider");
+    }
+
+    const isLogin = !!context.user; // בדוק אם המשתמש מחובר
+    const isRegistered = context.isRegistered; // עכשיו זה לא יגרום לשגיאה
 
     return (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', minWidth: 300, width: '100%' }}>
             {buttons.map((button) => {
-                if (button.requiresLogin && !isLogin) {
-                    return null;
+                if (button.requiresLogin && !isLogin && !isRegistered) {
+                    return null; // אם הכפתור דורש התחברות והמשתמש לא מחובר ולא נרשם, אל תציג אותו
                 }
                 return (
                     <ImageButton
@@ -64,6 +68,8 @@ const Header: React.FC<HeaderProps> = ({ onSignupClick }) => {
             })}
         </Box>
     );
-}
+};
+
+
 
 export default Header;

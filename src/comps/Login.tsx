@@ -1,84 +1,99 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import React, { useContext, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Container, Paper, TextField, Button, Snackbar, Alert } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
+import { UserContext } from './UserContext';
+import axios from 'axios';
 
-interface User {
-  id: number;
-  username: string;
-  password: string;
+interface LoginFormData {
+    username: string;
+    password: string;
 }
 
-export default function Login() {
-  const [user, setUser] = useState<User | null>(null);
-  const [error, setError] = useState<string | null>(null);
+const Login: React.FC<{ onSignupClick: () => void; onClose: () => void }> = ({ onSignupClick, onClose }) => {
+    const userContext = useContext(UserContext);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<boolean>(false);
 
-  const {
-    register: registerLogin,
-    handleSubmit: handleLoginSubmit,
-    formState: { errors: loginErrors },
-  } = useForm<{ username: string; password: string }>();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<LoginFormData>();
 
-  const handleLogin = async (data: { username: string; password: string }) => {
-    setError(null);
-    try {
-      const response = await fetch("http://localhost:8080/api/user/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        throw new Error("Login failed");
-      }
-      const userData: User = await response.json();
-      setUser(userData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "שגיאה לא ידועה");
-    }
-  };
+    const onSubmit = async (data: LoginFormData) => {
+        setError(null);
+        try {
+            const response = await axios.post("http://localhost:8080/api/user/login", {
+                username: data.username,
+                password: data.password,
+            });
 
-  return (
-    <Container component="main" maxWidth="xs" style={{ marginTop: '100px' }}>
-      <Paper elevation={3} style={{ padding: '20px' }}>
-        <h2 style={{ textAlign: 'center' }}>התחברות</h2>
-        {error && (
-          <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)} 
-                    anchorOrigin={{ vertical: "top", horizontal: "center" }}>
-            <Alert severity="error" variant="filled" onClose={() => setError(null)}>
-              {error}
-            </Alert>
-          </Snackbar>
-        )}
-        {user ? (
-          <p className="text-green-500">התחברת בהצלחה! ברוך הבא, {user.username}.</p>
-        ) : (
-          <form onSubmit={handleLoginSubmit(handleLogin)}>
-            <TextField
-              {...registerLogin("username", { required: "חובה להזין שם משתמש" })}
-              label="שם משתמש"
-              variant="outlined"
-              margin="normal"
-              fullWidth
-              error={!!loginErrors.username}
-              helperText={loginErrors.username ? loginErrors.username.message : ''}
-            />
-            <TextField
-              {...registerLogin("password", { required: "חובה להזין סיסמה" })}
-              label="סיסמה"
-              variant="outlined"
-              margin="normal"
-              type="password"
-              fullWidth
-              error={!!loginErrors.password}
-              helperText={loginErrors.password ? loginErrors.password.message : ''}
-            />
-            <Button type="submit" variant="contained" color="primary" fullWidth style={{ marginTop: '16px' }}>
-              התחבר
-            </Button>
-          </form>
-        )}
-      </Paper>
-    </Container>
-  );
-}
+            if (response.data.id) {
+                userContext?.setUser({ id: response.data.id, username: data.username });
+                setSuccess(true);
+                // סוגר את הטופס אחרי הצלחה
+            } else {
+                setError("שגיאה: לא נמצא משתמש עם הפרטים שסיפקת.");
+            }
+        } catch (err) {
+            setError("שגיאה בהתחברות, אנא נסה שוב.");
+        }
+    };
+
+    return (
+        <Container component="main" maxWidth="xs" style={{ marginTop: '100px' }}>
+            <Paper elevation={3} style={{ padding: '20px', position: 'relative' }}>
+                <h2 style={{ textAlign: 'center' }}>התחברות</h2>
+                <IconButton
+                    style={{ position: 'absolute', right: 10, top: 10 }}
+                    onClick={onClose}
+                >
+                    <CloseIcon />
+                </IconButton>
+                {error && (
+                    <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)} 
+                              anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+                        <Alert severity="error" variant="filled" onClose={() => setError(null)}>
+                            {error}
+                        </Alert>
+                    </Snackbar>
+                )}
+                {success ? (
+                    <p className="text-green-500">התחברת בהצלחה!</p>
+                ) : (
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <TextField
+                            {...register("username", { required: "חובה להזין שם משתמש" })}
+                            label="שם משתמש"
+                            variant="outlined"
+                            margin="normal"
+                            fullWidth
+                            error={!!errors.username}
+                            helperText={errors.username ? errors.username.message : ''}
+                        />
+                        <TextField
+                            {...register("password", { required: "חובה להזין סיסמה" })}
+                            label="סיסמה"
+                            variant="outlined"
+                            margin="normal"
+                            type="password"
+                            fullWidth
+                            error={!!errors.password}
+                            helperText={errors.password ? errors.password.message : ''}
+                        />
+                        <Button type="submit" variant="contained" color="primary" fullWidth style={{ marginTop: '16px' }}>
+                            התחבר
+                        </Button>
+                        <Button onClick={onSignupClick} variant="text" fullWidth style={{ marginTop: '16px' }}>
+                            עדיין אינך רשום? הרשמה
+                        </Button>
+                    </form>
+                )}
+            </Paper>
+        </Container>
+    );
+};
+
+export default Login;
