@@ -5,6 +5,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 import { UserContext } from './UserContext';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginFormData {
     username: string;
@@ -15,6 +16,7 @@ const Login: React.FC<{ onSignupClick: () => void; onClose: () => void }> = ({ o
     const userContext = useContext(UserContext);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean>(false);
+    const navigate = useNavigate();
 
     const {
         register,
@@ -25,15 +27,20 @@ const Login: React.FC<{ onSignupClick: () => void; onClose: () => void }> = ({ o
     const onSubmit = async (data: LoginFormData) => {
         setError(null);
         try {
-            const response = await axios.post("http://localhost:8080/api/user/login", {
-                username: data.username,
-                password: data.password,
+            const response = await axios.post("http://localhost:8080/api/user/login", { 
+                UserName: data.username, // שים לב לשם המפתח
+                Password: data.password,
             });
+            
+            
+            console.log("ok")
+            console.log(response.data);
 
             if (response.data.id) {
                 userContext?.setUser({ id: response.data.id, username: data.username });
                 setSuccess(true);
-                // סוגר את הטופס אחרי הצלחה
+                onClose(); // סוגר את הטופס
+                navigate('/home'); // מעביר לדף הבית
             } else {
                 setError("שגיאה: לא נמצא משתמש עם הפרטים שסיפקת.");
             }
@@ -86,7 +93,7 @@ const Login: React.FC<{ onSignupClick: () => void; onClose: () => void }> = ({ o
                         <Button type="submit" variant="contained" color="primary" fullWidth style={{ marginTop: '16px' }}>
                             התחבר
                         </Button>
-                        <Button onClick={onSignupClick} variant="text" fullWidth style={{ marginTop: '16px' }}>
+                        <Button onClick={() => { onSignupClick(); onClose(); }} variant="text" fullWidth style={{ marginTop: '16px' }}>
                             עדיין אינך רשום? הרשמה
                         </Button>
                     </form>

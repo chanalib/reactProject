@@ -18,3 +18,10 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+/* .recipe-list {
+  background-image: url('../../build/images/background4.jpg');
+  background-size: cover;
+  background-position: center;
+  padding: 20px; /* הוסף ריפוד אם נדרש */
+  /* min-height: 100vh; /* הגדר גובה מינימלי */
+/* } */ 

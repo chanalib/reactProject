@@ -5,7 +5,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 import axios, { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { UserContext } from './UserContext'; // ייבוא ה-UserContext
+import { UserContext } from './UserContext';
 
 interface SignupFormData {
     UserName: string;
@@ -17,23 +17,18 @@ interface SignupFormData {
 }
 
 const Signup: React.FC<{ onClose: () => void; onSuccess: () => void }> = ({ onClose, onSuccess }) => {
-    const userContext = useContext(UserContext); // קבלת ה-context
+    const userContext = useContext(UserContext);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean>(false);
     const navigate = useNavigate();
 
-    // בדוק אם ה-context קיים
     if (!userContext) {
         throw new Error("UserContext is undefined. Make sure to wrap your component with UserProvider.");
     }
 
-    const { setUser } = userContext; // עכשיו setUser בטוח קיים
+    const { setUser } = userContext;
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<SignupFormData>();
+    const { register, handleSubmit } = useForm<SignupFormData>();
 
     const onSubmit = async (data: SignupFormData) => {
         try {
@@ -46,20 +41,19 @@ const Signup: React.FC<{ onClose: () => void; onSuccess: () => void }> = ({ onCl
                 Tz: data.Tz,
             });
             console.log(response.data);
-    
+
             if (response.data.message === "User already exists") {
                 setError("כבר נרשמת!");
-                return;
             }
-    
-            // בדוק אם ה-user קיים בתגובה
+            
+
             if (response.data.user) {
                 setUser({ id: response.data.user.id, username: response.data.user.username });
                 setSuccess(true);
                 onSuccess();
                 onClose();
                 navigate('/home');
-            } 
+            }
         } catch (error) {
             const axiosError = error as AxiosError;
             console.error('Error during signup:', axiosError.response?.data || axiosError.message);
@@ -70,7 +64,6 @@ const Signup: React.FC<{ onClose: () => void; onSuccess: () => void }> = ({ onCl
             }
         }
     };
-    
 
     return (
         <Container component="main" maxWidth="xs">
@@ -87,6 +80,7 @@ const Signup: React.FC<{ onClose: () => void; onSuccess: () => void }> = ({ onCl
                         {error}
                     </Alert>
                 </Snackbar>
+
                 <Snackbar open={success} autoHideDuration={6000} onClose={() => setSuccess(false)}>
                     <Alert severity="success" variant="filled" onClose={() => setSuccess(false)}>
                         התחברת בהצלחה!
@@ -94,60 +88,48 @@ const Signup: React.FC<{ onClose: () => void; onSuccess: () => void }> = ({ onCl
                 </Snackbar>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <TextField
-                        {...register("UserName", { required: "חובה להזין שם משתמש" })}
+                        {...register("UserName")}
                         label="שם משתמש"
                         variant="outlined"
                         margin="normal"
                         fullWidth
-                        error={!!errors.UserName}
-                        helperText={errors.UserName ? errors.UserName.message : ''}
                     />
                     <TextField
-                        {...register("Password", { required: "חובה להזין סיסמה" })}
+                        {...register("Password")}
                         label="סיסמה"
                         variant="outlined"
                         margin="normal"
                         type="password"
                         fullWidth
-                        error={!!errors.Password}
-                        helperText={errors.Password ? errors.Password.message : ''}
-                    />סגור
+                    />
                     <TextField
-                        {...register("Name", { required: "חובה להזין שם" })}
+                        {...register("Name")}
                         label="שם"
                         variant="outlined"
                         margin="normal"
                         fullWidth
-                        error={!!errors.Name}
-                        helperText={errors.Name ? errors.Name.message : ''}
                     />
                     <TextField
-                        {...register("Phone", { required: "חובה להזין מספר טלפון" })}
+                        {...register("Phone")}
                         label="טלפון"
                         variant="outlined"
                         margin="normal"
                         fullWidth
-                        error={!!errors.Phone}
-                        helperText={errors.Phone ? errors.Phone.message : ''}
                     />
                     <TextField
-                        {...register("Email", { required: "חובה להזין כתובת מייל" })}
+                        {...register("Email")}
                         label="מייל"
                         variant="outlined"
                         margin="normal"
                         type="email"
                         fullWidth
-                        error={!!errors.Email}
-                        helperText={errors.Email ? errors.Email.message : ''}
                     />
                     <TextField
-                        {...register("Tz", { required: "חובה להזין מספר זהות" })}
+                        {...register("Tz")}
                         label="מספר זהות"
                         variant="outlined"
                         margin="normal"
                         fullWidth
-                        error={!!errors.Tz}
-                        helperText={errors.Tz ? errors.Tz.message : ''}
                     />
                     <Button type="submit" variant="contained" color="primary" fullWidth style={{ marginTop: '16px' }}>
                         הרשמה

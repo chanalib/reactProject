@@ -1,19 +1,21 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { UserContext } from './UserContext';
+import Login from './Login';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
-    onSignupClick: () => void; // הוספת טיפוס לפונקציה
+    onSignupClick: () => void;
 }
 
 const buttons = [
-    { title: 'מתכונים', width: '25%', requiresLogin: true },
-    { title: 'התחברות', width: '25%', requiresLogin: false },
-    { title: 'הרשמה', width: '25%', requiresLogin: false },
-    { title: 'דף הבית', width: '25%', requiresLogin: false }
+    { title: 'מתכונים', width: '25%' },
+    { title: 'התחברות', width: '25%' },
+    { title: 'הרשמה', width: '25%' },
+    { title: 'דף הבית', width: '25%' }
 ];
 
 const ImageButton = styled(Button)(({ theme }) => ({
@@ -29,47 +31,53 @@ const ImageButton = styled(Button)(({ theme }) => ({
         },
     },
 }));
+
 const Header: React.FC<HeaderProps> = ({ onSignupClick }) => {
     const context = useContext(UserContext);
-    if (!context) {
-        throw new Error("Header must be used within a UserProvider");
-    }
+    const [showLogin, setShowLogin] = useState(false);
+    const navigate = useNavigate();
 
-    const isLogin = !!context.user; // בדוק אם המשתמש מחובר
-    const isRegistered = context.isRegistered; // עכשיו זה לא יגרום לשגיאה
+    const handleLoginClick = () => {
+        setShowLogin(true);
+    };
+
+    const handleCloseLogin = () => {
+        setShowLogin(false);
+    };
+
+    const handleRecipesClick = () => {
+        navigate('/recipes');
+    };
 
     return (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', minWidth: 300, width: '100%' }}>
-            {buttons.map((button) => {
-                if (button.requiresLogin && !isLogin && !isRegistered) {
-                    return null; // אם הכפתור דורש התחברות והמשתמש לא מחובר ולא נרשם, אל תציג אותו
-                }
-                return (
-                    <ImageButton
-                        key={button.title}
-                        style={{ width: button.width }}
-                        onClick={button.title === 'הרשמה' ? onSignupClick : undefined}
+            {buttons.map((button) => (
+                <ImageButton
+                    key={button.title}
+                    style={{ width: button.width }}
+                    onClick={button.title === 'התחברות' ? handleLoginClick : 
+                              button.title === 'הרשמה' ? onSignupClick : 
+                              button.title === 'מתכונים' ? handleRecipesClick : 
+                              undefined}
+                >
+                    <Typography
+                        component="span"
+                        variant="subtitle1"
+                        color="inherit"
+                        sx={(theme) => ({
+                            position: 'relative',
+                            p: 2,
+                            pt: 1,
+                            pb: `calc(${theme.spacing(1)} + 6px)`,
+                        })}
                     >
-                        <Typography
-                            component="span"
-                            variant="subtitle1"
-                            color="inherit"
-                            sx={(theme) => ({
-                                position: 'relative',
-                                p: 2,
-                                pt: 1,
-                                pb: `calc(${theme.spacing(1)} + 6px)`,
-                            })}
-                        >
-                            {button.title}
-                        </Typography>
-                    </ImageButton>
-                );
-            })}
+                        {button.title}
+                    </Typography>
+                </ImageButton>
+            ))}
+            {showLogin && <Login onSignupClick={onSignupClick} onClose={handleCloseLogin} />}
         </Box>
     );
 };
-
-
 
 export default Header;
